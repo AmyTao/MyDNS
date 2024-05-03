@@ -1,13 +1,7 @@
-// func MyTest(t *testing.T, part string, nclients int,
-//
-//	unreliable bool, drop_rate int,delay_dur int,
-//	crash bool, crash_rate int,
-//	partitions bool, partition_n int,
-//	maxraftstate int) {
-//
-// for{
-// socket.recv
-// }
+/*
+ * Main program for the DNS server and clerk
+ */
+
 package main
 
 import (
@@ -41,7 +35,7 @@ func my_run_client(cfg *raftkv.Config, me int, ca chan bool, addr_string string,
 		fmt.Printf("*** listen failed error when creating clerk %v, with address %v, error:%v\n", me, addr_string, err)
 		return
 	}
-	defer listen.Close() // 使用完关闭服务
+	defer listen.Close() // Close the connection when the function returns
 	fmt.Printf("UDP server (clerk %v) listening on %v...\n", me, addr_string)
 	ck.Listen = listen
 
@@ -66,7 +60,7 @@ func my_make_config(n int, unreliable bool, maxraftstate int) *raftkv.Config {
 	runtime.GOMAXPROCS(4)
 	cfg := &raftkv.Config{}
 	cfg.T = &testing.T{}
-	cfg.Net = labrpc.MakeNetwork() //修改！！
+	cfg.Net = labrpc.MakeNetwork() 
 	cfg.N = n
 	cfg.Kvservers = make([]*raftkv.KVServer, cfg.N)
 	cfg.Saved = make([]*raft.Persister, cfg.N)
@@ -128,14 +122,13 @@ func clerk_routine(me int, ck *raftkv.Clerk) {
 			// Add total received by 1
 			clerk_received_count++
 
-			// TODO //
 			// parse the packet by dns protocol
 			var msg dnsmessage.Message
 			if err := msg.Unpack(buffer); err == nil {
 				//
-				fmt.Println(msg)
-				ck.Put("hostname", "127.0.1.2")
-				ck.Put("hostname.", "127.0.1.3")
+				// fmt.Println(msg)
+				// ck.Put("hostname", "127.0.1.2")
+				// ck.Put("hostname.", "127.0.1.3")
 
 				for _, question := range msg.Questions {
 					name := question.Name.String()
@@ -242,7 +235,6 @@ func my_make_dns_address(ncli int) []string {
 	return res
 }
 
-var done_clients int32 = 0
 var total_put int32 = 0      // total number of put requests
 var total_query int32 = 0    // total number of query requests
 var total_received int32 = 0 // total number of received responses (put+query+invalid packet)
@@ -273,15 +265,13 @@ func main() {
 	nservers := _nservers
 	cfg := my_make_config(nservers, unreliable, maxraftstate)
 	defer cfg.Cleanup()
-	atomic.StoreInt32(&done_clients, 0)
 
 	cfg.Begin(title)
 
 	ClerkAddresses := my_make_dns_address(nclients)
 	context, cancelClerkFunc := context.WithCancel(context.Background())
 
-	// 因为只执行一遍，不需要把spawn_clients_and_wait放到go routine里
-	// 主程序，启动所有clerk
+	// Start the clerk routines
 	cfg.Begin(title)
 	ca := make([]chan bool, nclients)
 	for cli := 0; cli < nclients; cli++ {
@@ -293,10 +283,9 @@ func main() {
 	time.Sleep(time.Duration(dnsDuration) * time.Second)
 
 	// Tell clients to quit
-	atomic.StoreInt32(&done_clients, 1)
 	cancelClerkFunc()
 
-	// 等待所有clerk完成
+	// Wait for all clients to finish, and check if they succeeded
 	for cli := 0; cli < nclients; cli++ {
 		ok := <-ca[cli]
 		if ok == false {
