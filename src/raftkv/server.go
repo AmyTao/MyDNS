@@ -106,7 +106,6 @@ func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
 	}
 
 	go func() {kv.closeCh(index)}()
-	return
 }
 
 func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
@@ -165,7 +164,6 @@ func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
 		}
 	}
 	go func() {kv.closeCh(index)}()
-	return
 }
 
 //
@@ -180,7 +178,6 @@ func (kv *KVServer) Kill() {
 	kv.mu.Lock()
 	raft.InfoKV.Printf("KVServer:%2d | KV server is died!\n", kv.me)
 	kv.mu.Unlock()
-	//底层rf删掉之后，上层的kv server不再交流和更新信息，相当于挂了，所以不用做任何事情
 }
 
 //
@@ -326,10 +323,10 @@ func (kv *KVServer) checkState(index int, term int){
 
 	//日志长度接近时，启动快照
 	//因为rf连续提交日志后才会释放rf.mu，所以需要提前发出快照调用
-	portion := 2 / 3
+	portion := 2. / 3
 	//一个log的字节长度不是1，而可能是几十字节，所以可能仅仅几十个命令的raftStateSize就超过1000了。
 	//几个log的字节大小可能就几百字节了，所以快照要趁早
-	if kv.persister.RaftStateSize() < kv.maxraftstate * portion{
+	if float64(kv.persister.RaftStateSize()) < portion * float64(kv.maxraftstate){
 		return
 	}
 	//因为takeSnapshot需要rf.mu
@@ -356,7 +353,7 @@ func (kv *KVServer) encodeSnapshot() []byte {
 
 func (kv *KVServer) loadSnapshot(){
 	data := kv.persister.ReadSnapshot()
-	if data == nil || len(data) == 0{
+	if len(data) == 0 {
 		return
 	}
 	kv.decodedSnapshot(data)
