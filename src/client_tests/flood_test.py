@@ -21,7 +21,7 @@ def generate_ip():
 
 def send_messages(sock, base_port, nclients):
     types = ["Query", "Put"]
-    base_ip = '0.0.0.0'
+    base_ip = '127.0.0.1'
     
     send_put_counter = 0
     send_query_counter = 0
@@ -52,7 +52,7 @@ def main():
 
     # Create a UDP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind(('0.0.0.0', local_port))
+    sock.bind(('127.0.0.1', local_port))
 
     # Start the thread for receiving messages
     receiver_thread = threading.Thread(target=receive_messages, args=(sock,))
