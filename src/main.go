@@ -245,16 +245,18 @@ func main() {
 	var _nservers int
 	var _unreliable bool
 	var _dnsDuration int
+	var _crash bool
 
 	// Set the default values
 	flag.IntVar(&_nclerks, "nclerks", 5, "Number of dns clerks")
 	flag.IntVar(&_nservers, "nservers", 5, "Number of servers")
 	flag.BoolVar(&_unreliable, "unreliable", false, "Whether the network is unreliable")
 	flag.IntVar(&_dnsDuration, "dnsDuration", 10, "Duration of the dns test")
+	flag.BoolVar(&_crash, "crash", false, "Whether to crash servers")
 
 	flag.Parse()
 
-	fmt.Printf("[INFO] : nclerks: %v, nservers: %v, unreliable: %v, dnsDuration: %v\n", _nclerks, _nservers, _unreliable, _dnsDuration)
+	fmt.Printf("[INFO] : nclerks: %v, nservers: %v, unreliable: %v, dnsDuration: %v, crash: %v\n", _nclerks, _nservers, _unreliable, _dnsDuration, _crash)
 
 	// Metadata & make config
 	title := "Start"
@@ -263,13 +265,14 @@ func main() {
 	maxraftstate := 1000
 	dnsDuration := _dnsDuration
 	nservers := _nservers
+	crash:=_crash
 	cfg := my_make_config(nservers, unreliable, maxraftstate)
 	defer cfg.Cleanup()
 
 	cfg.Begin(title)
 
 	ClerkAddresses := my_make_dns_address(nclients)
-	context, cancelClerkFunc := context.WithCancel(context.Background())
+	context, cancelFunc := context.WithCancel(context.Background())
 
 	// Start the clerk routines
 	cfg.Begin(title)
@@ -279,11 +282,48 @@ func main() {
 		go my_run_client(cfg, cli, ca[cli], ClerkAddresses[cli], clerk_routine, context)
 	}
 
+	if crash {
+		// 计算需要挂掉的 server 数量，确保不超过半数
+		maxCrash := nservers / 2
+		crashedServers := make(map[int]bool) // 记录每个服务器是否已经挂掉并重启了
+
+		// 开启 nservers 个 goroutine，每个 goroutine 负责一个 server 的随机挂掉或重启
+		for i := 0; i < nservers; i++ {
+			go func(i int) {
+				for {
+					select {
+					case <-context.Done(): // 如果收到取消信号则退出
+						fmt.Printf("server %v received done signal, exiting...\n", i)
+						continue
+					default:
+						fmt.Printf("firstly crashedServers %v ...\n", len(crashedServers))
+						if len(crashedServers) >= maxCrash-1 {
+							cancelFunc() // 在 goroutine 退出时调用 cancel 函数
+						}
+						// 随机挂掉 server
+						time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
+						cfg.ShutdownServer(i)
+						fmt.Printf("shutdown server %d\n", i)
+						crashedServers[i] = true // 记录该服务器已经挂掉
+						// 随机启动 server
+						time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
+						cfg.StartServer(i)
+						fmt.Printf("start server %d\n", i)
+
+						// 更新 crashedServers 映射
+						delete(crashedServers, i)
+					}
+				}
+			}(i)
+		}
+		cfg.ConnectAll()
+	}
+
 	// Use this to set the time before the program exits
 	time.Sleep(time.Duration(dnsDuration) * time.Second)
 
 	// Tell clients to quit
-	cancelClerkFunc()
+	cancelFunc()
 
 	// Wait for all clients to finish, and check if they succeeded
 	for cli := 0; cli < nclients; cli++ {
