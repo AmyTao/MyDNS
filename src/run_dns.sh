@@ -14,6 +14,6 @@ go run main.go \
     --nservers 5 \
     --nclerks 5 \
     --dnsDuration 10 \
-    --crash false \
-    # --unreliable false \
+    --crash \
+    # --unreliable \
 

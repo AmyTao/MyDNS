@@ -13,6 +13,7 @@ import (
 	"math/rand"
 	"net"
 	"runtime"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -283,35 +284,46 @@ func main() {
 	}
 
 	if crash {
-		// 计算需要挂掉的 server 数量，确保不超过半数
+		// Make sure that at most half of the servers are crashed
 		maxCrash := nservers / 2
-		crashedServers := make(map[int]bool) // 记录每个服务器是否已经挂掉并重启了
+		crashedServers := make(map[int]bool) // Record the crashed servers
 
-		// 开启 nservers 个 goroutine，每个 goroutine 负责一个 server 的随机挂掉或重启
+		var mutex sync.Mutex = sync.Mutex{}
+
+		// Start the crash controller routines
 		for i := 0; i < nservers; i++ {
 			go func(i int) {
 				for {
 					select {
-					case <-context.Done(): // 如果收到取消信号则退出
-						fmt.Printf("server %v received done signal, exiting...\n", i)
+					case <-context.Done(): // If the global context is done, exit
+						fmt.Printf("Crash Controller %v received done signal, exiting...\n", i)
 						return
 					default:
-						fmt.Printf("firstly crashedServers %v ...\n", len(crashedServers))
-						if len(crashedServers) >= maxCrash-1 {
-							cancelFunc() // 在 goroutine 退出时调用 cancel 函数
-						}
-						// 随机挂掉 server
-						time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
-						cfg.ShutdownServer(i)
-						fmt.Printf("shutdown server %d\n", i)
-						crashedServers[i] = true // 记录该服务器已经挂掉
-						// 随机启动 server
-						time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
-						cfg.StartServer(i)
-						fmt.Printf("start server %d\n", i)
+						time.Sleep(time.Duration(rand.Intn(1000)+1000) * time.Millisecond)
 
-						// 更新 crashedServers 映射
+						mutex.Lock()
+						// Check if enough servers have crashed
+						if len(crashedServers) >= maxCrash {
+							// If enough servers have crashed, do nothing
+							mutex.Unlock()
+							continue
+						}
+						// If not, crash this server
+						cfg.ShutdownServer(i)
+						fmt.Printf("shutdown server %d, time: %v\n", i, time.Now())
+						crashedServers[i] = true // Record the crashed server
+						mutex.Unlock()
+
+						// Later, random start the server
+						time.Sleep(time.Duration(rand.Intn(1000)+1000) * time.Millisecond)
+						
+						mutex.Lock()
+						cfg.StartServer(i)
+						cfg.ConnectAll()
+						fmt.Printf("start server %d, time: %v\n", i, time.Now())
+						// Update the crashedServers map
 						delete(crashedServers, i)
+						mutex.Unlock()
 					}
 				}
 			}(i)
