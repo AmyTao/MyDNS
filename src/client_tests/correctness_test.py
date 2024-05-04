@@ -56,7 +56,7 @@ def main():
     base_port = 9876
     nclients = 5  # Number of client ports
     local_port = 12345
-    num_operations = 5  # Number of put/query operations per client
+    num_operations = 20  # Number of put/query operations per client
     total_messages = nclients * num_operations  # Total query messages expected (only counts queries)
 
     # Create a UDP socket
