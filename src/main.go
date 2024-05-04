@@ -294,7 +294,7 @@ func main() {
 					select {
 					case <-context.Done(): // 如果收到取消信号则退出
 						fmt.Printf("server %v received done signal, exiting...\n", i)
-						continue
+						return
 					default:
 						fmt.Printf("firstly crashedServers %v ...\n", len(crashedServers))
 						if len(crashedServers) >= maxCrash-1 {
