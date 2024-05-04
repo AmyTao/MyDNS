@@ -1,0 +1,56 @@
+[INFO] : nclerks: 5, nservers: 5, unreliable: false, dnsDuration: 20, crash: true
+Start ...
+Start ...
+UDP server (clerk 0) listening on :9876...
+UDP server (clerk 3) listening on :9879...
+UDP server (clerk 4) listening on :9880...
+UDP server (clerk 1) listening on :9877...
+UDP server (clerk 2) listening on :9878...
+shutdown server 4, time: 2024-05-04 18:36:55.315590233 +0800 CST m=+1.023977007
+shutdown server 3, time: 2024-05-04 18:36:55.384858632 +0800 CST m=+1.093245402
+start server 4, time: 2024-05-04 18:36:56.425673702 +0800 CST m=+2.134060474
+start server 3, time: 2024-05-04 18:36:56.658181255 +0800 CST m=+2.366568037
+shutdown server 0, time: 2024-05-04 18:36:57.565936237 +0800 CST m=+3.274323011
+shutdown server 2, time: 2024-05-04 18:36:57.59742633 +0800 CST m=+3.305813104
+start server 0, time: 2024-05-04 18:36:58.728225369 +0800 CST m=+4.436612141
+shutdown server 4, time: 2024-05-04 18:36:58.760183221 +0800 CST m=+4.468569993
+start server 2, time: 2024-05-04 18:36:58.785034242 +0800 CST m=+4.493421018
+shutdown server 1, time: 2024-05-04 18:36:59.439939164 +0800 CST m=+5.148325934
+start server 4, time: 2024-05-04 18:37:00.421362852 +0800 CST m=+6.129749590
+start server 1, time: 2024-05-04 18:37:00.802338503 +0800 CST m=+6.510725275
+shutdown server 2, time: 2024-05-04 18:37:01.51057379 +0800 CST m=+7.218960557
+shutdown server 0, time: 2024-05-04 18:37:01.554027101 +0800 CST m=+7.262413870
+start server 0, time: 2024-05-04 18:37:03.024904918 +0800 CST m=+8.733291661
+shutdown server 4, time: 2024-05-04 18:37:03.180681521 +0800 CST m=+8.889068295
+start server 2, time: 2024-05-04 18:37:03.265201056 +0800 CST m=+8.973587830
+shutdown server 1, time: 2024-05-04 18:37:03.393594643 +0800 CST m=+9.101981449
+start server 4, time: 2024-05-04 18:37:04.366106781 +0800 CST m=+10.074493550
+start server 1, time: 2024-05-04 18:37:04.726339672 +0800 CST m=+10.434726446
+shutdown server 2, time: 2024-05-04 18:37:05.144411462 +0800 CST m=+10.852798233
+shutdown server 3, time: 2024-05-04 18:37:05.184081222 +0800 CST m=+10.892467994
+start server 2, time: 2024-05-04 18:37:06.791471713 +0800 CST m=+12.499858503
+start server 3, time: 2024-05-04 18:37:07.174083632 +0800 CST m=+12.882470424
+shutdown server 0, time: 2024-05-04 18:37:07.665481003 +0800 CST m=+13.373867774
+shutdown server 4, time: 2024-05-04 18:37:07.679870575 +0800 CST m=+13.388257365
+start server 0, time: 2024-05-04 18:37:09.064372909 +0800 CST m=+14.772759685
+start server 4, time: 2024-05-04 18:37:09.38486509 +0800 CST m=+15.093251865
+shutdown server 1, time: 2024-05-04 18:37:09.56875282 +0800 CST m=+15.277139587
+shutdown server 2, time: 2024-05-04 18:37:10.03866948 +0800 CST m=+15.747056243
+start server 2, time: 2024-05-04 18:37:11.25470548 +0800 CST m=+16.963092256
+start server 1, time: 2024-05-04 18:37:11.284791187 +0800 CST m=+16.993177956
+shutdown server 4, time: 2024-05-04 18:37:12.480030275 +0800 CST m=+18.188417050
+shutdown server 0, time: 2024-05-04 18:37:12.746584833 +0800 CST m=+18.454971622
+start server 4, time: 2024-05-04 18:37:13.952699225 +0800 CST m=+19.661085998
+start server 0, time: 2024-05-04 18:37:14.004437519 +0800 CST m=+19.712824289
+shutdown server 3, time: 2024-05-04 18:37:14.069474627 +0800 CST m=+19.777861399
+Clerk 4 received done signal, exiting...
+shutdown server 2, time: 2024-05-04 18:37:14.345949088 +0800 CST m=+20.054335887
+Clerk 1 received done signal, exiting...
+Clerk 2 received done signal, exiting...
+Crash Controller 1 received done signal, exiting...
+Clerk 3 received done signal, exiting...
+Crash Controller 4 received done signal, exiting...
+Clerk 0 received done signal, exiting...
+===============Statistics===============
+Total packets: 200, total put: 100, total query: 100 
+  ... Passed --  20.8s, 5 servers,  7205 rpcs

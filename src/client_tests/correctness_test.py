@@ -5,6 +5,7 @@ import random
 import time
 import string
 import sys
+import argparse
 
 ip_pairs_local = {}
 
@@ -54,6 +55,8 @@ def worker_query(sock, base_port, nclients, all_keys):
 def main():
     parser = argparse.ArgumentParser(description='Flood test for the key-value store.')
     parser.add_argument('--nclients', type=int, default=5, help='Number of client ports')
+
+    args = parser.parse_args()
 
     # Configuration
     base_port = 9876

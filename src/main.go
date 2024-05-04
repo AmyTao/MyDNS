@@ -277,6 +277,7 @@ func main() {
 
 	// Start the clerk routines
 	cfg.Begin(title)
+	fmt.Printf("[INFO] : Starting all clients... time: %v\n", time.Now())
 	ca := make([]chan bool, nclients)
 	for cli := 0; cli < nclients; cli++ {
 		ca[cli] = make(chan bool)
@@ -336,7 +337,8 @@ func main() {
 
 	// Tell clients to quit
 	cancelFunc()
-
+	fmt.Printf("[INFO] : Shutting down clients... time: %v\n", time.Now())
+	
 	// Wait for all clients to finish, and check if they succeeded
 	for cli := 0; cli < nclients; cli++ {
 		ok := <-ca[cli]
