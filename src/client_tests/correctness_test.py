@@ -52,9 +52,12 @@ def worker_query(sock, base_port, nclients, all_keys):
         send_query(sock, key, base_ip, target_port)
 
 def main():
+    parser = argparse.ArgumentParser(description='Flood test for the key-value store.')
+    parser.add_argument('--nclients', type=int, default=5, help='Number of client ports')
+
     # Configuration
     base_port = 9876
-    nclients = 5  # Number of client ports
+    nclients = args.nclients  # Number of client ports
     local_port = 12345
     num_operations = 20  # Number of put/query operations per client
     total_messages = nclients * num_operations  # Total query messages expected (only counts queries)
