@@ -39,6 +39,10 @@ func my_run_client(cfg *raftkv.Config, me int, ca chan bool, addr_string string,
 	defer listen.Close() // Close the connection when the function returns
 	fmt.Printf("UDP server (clerk %v) listening on %v...\n", me, addr_string)
 	ck.Listen = listen
+	
+	clerk_address := "10.23.64.10" + addr_string
+	clerk_hostname := fmt.Sprintf("::Clerk%d", me)
+	ck.Put(clerk_hostname, clerk_address)
 
 	// Add a sentinel context to the clerk
 	ck.Context = context
@@ -226,6 +230,24 @@ func clerk_routine(me int, ck *raftkv.Clerk) {
 			}
 		}
 	}
+}
+
+func my_get_self_ip() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+	for _, address := range addrs {
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				return ipnet.IP.String()
+			}
+		}
+	}
+	// if no valid IP found, raise an error
+	log.Fatal("No valid IP found")
+	return ""
 }
 
 func my_make_dns_address(ncli int) []string {

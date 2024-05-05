@@ -82,11 +82,18 @@ def parse_args() -> argparse.Namespace:
     parser_query.add_argument('--servers', type=str, nargs='+', default=SERVER_ADDRESS, help='The DNS servers to query for the ip address')
     parser_query.add_argument('--timeout', type=int, default=2, help='The timeout in seconds to wait for a response')
 
+    parser_dnsip = subparser.add_parser('dnsip', help='Get the ip address of the DNS servers')
+    parser_dnsip.add_argument('--servers', type=str, nargs='+', default=SERVER_ADDRESS, help='The DNS servers to query for the ip address')
+    parser_dnsip.add_argument('--num-servers', type=int, default=5, help='The guess number of DNS servers')
+    parser_dnsip.add_argument('--timeout', type=int, default=2, help='The timeout in seconds to wait for a response')
+
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
+
+    print('-' * 30)
 
     if args.mode == 'update':
         # In this mode, the client will update the current ip address to the DNS server
@@ -105,8 +112,7 @@ def main():
     elif args.mode == 'query':
         # In this mode, the client will query the ip address of a hostname from the DNS server
         for hostname in args.hostname:
-            print('-' * 30)
-            print(f'Querying for hostname: {hostname}')
+            print(f'Querying for hostname: {hostname}...', end=' ')
             packet = {
                 'Type': 'Query',
                 'Key': hostname,
@@ -116,15 +122,65 @@ def main():
                 response = send_receive(sock, packet, args)
                 if response is not None:
                     if response["Value"] == "":
-                        _color_print(f'No IP Address found for {hostname}', 'red')
+                        _color_print(f'Failed!', 'red')
                     else:
-                        _color_print(f'IP Address for {hostname}: {response["Value"]}', 'green')
+                        _color_print(f'{response["Value"]}', 'green')
                 else:
-                    _color_print(f'Failed to get IP Address for {hostname}', 'red')
-        print('-' * 30)
+                    _color_print(f'Failed!', 'red')
     
+    elif args.mode == 'dnsip':
+        # In this mode, the client will ask for the DNS server ip addresses
+        # DNS servers have reserved hostname "::Clerk<id>".
+        dns_ip_list = []
+        for i in range(args.num_servers):
+            hostname = f'::Clerk{i}'
+            print(f'Querying for hostname: {hostname}...', end=' ')
+            packet = {
+                'Type': 'Query',
+                'Key': hostname,
+                'Value': None
+            }
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+                response = send_receive(sock, packet, args)
+                if response is not None:
+                    if response["Value"] == "":
+                        _color_print(f'Failed!', 'red')
+                    else:
+                        _color_print(f'Done!', 'green')
+                        dns_ip_list.append(response['Value'])
+                else:
+                    _color_print(f'Failed!', 'red')
+        # also tried to explore more, until cannot find
+        done = False
+        while not done:
+            i += 1
+            hostname = f'::Clerk{i}'
+            print(f'Querying for hostname: {hostname}...', end=' ')
+            packet = {
+                'Type': 'Query',
+                'Key': hostname,
+                'Value': None
+            }
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+                response = send_receive(sock, packet, args)
+                if response is not None:
+                    if response["Value"] == "":
+                        _color_print(f'Failed!', 'red')
+                        done = True
+                    else:
+                        _color_print(f'Done!', 'green')
+                        dns_ip_list.append(response["Value"])
+                else:
+                    _color_print(f'Failed!', 'red')
+                    done = False
+        _color_print('DNS server ip available:', 'blue')
+        print('"', ' '.join(dns_ip_list), '"', sep='')
+          
     else:
         raise ValueError('Invalid mode')
+
+    print('-' * 30)
+
 
 if __name__ == '__main__':
     main()
