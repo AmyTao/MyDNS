@@ -13,7 +13,7 @@ bash ./delete_logs.sh
 go run main.go \
     --nservers 5 \
     --nclerks 5 \
-    --dnsDuration 100 \
+    --dnsDuration 10 \
     # --crash \
     # --unreliable \
 
