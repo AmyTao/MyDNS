@@ -1,4 +1,4 @@
 #! /bin/bash
 
-python mydns.py update
+python mydns.py dnsip
 
