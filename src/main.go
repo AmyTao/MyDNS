@@ -55,14 +55,14 @@ func my_run_client(cfg *raftkv.Config, me int, ca chan bool, addr_string string,
 	cfg.DeleteClient(ck)
 }
 
-func my_make_config(n int, unreliable bool, maxraftstate int) *raftkv.Config {
+func my_make_config(n int, unreliable bool, maxraftstate int, num_cpus int) *raftkv.Config {
 	raftkv.Ncpu_once.Do(func() {
 		if runtime.NumCPU() < 2 {
 			fmt.Printf("warning: only one CPU, which may conceal locking bugs\n")
 		}
 		rand.Seed(raftkv.MakeSeed())
 	})
-	runtime.GOMAXPROCS(4)
+	runtime.GOMAXPROCS(num_cpus)
 	cfg := &raftkv.Config{}
 	cfg.T = &testing.T{}
 	cfg.Net = labrpc.MakeNetwork() 
@@ -269,6 +269,7 @@ func main() {
 	var _unreliable bool
 	var _dnsDuration int
 	var _crash bool
+	var _numCpus int
 
 	// Set the default values
 	flag.IntVar(&_nclerks, "nclerks", 5, "Number of dns clerks")
@@ -276,10 +277,12 @@ func main() {
 	flag.BoolVar(&_unreliable, "unreliable", false, "Whether the network is unreliable")
 	flag.IntVar(&_dnsDuration, "dnsDuration", 10, "Duration of the dns test")
 	flag.BoolVar(&_crash, "crash", false, "Whether to crash servers")
+	flag.IntVar(&_numCpus, "numCpus", runtime.NumCPU(), "Number of CPUs to use")
 
 	flag.Parse()
 
-	fmt.Printf("[INFO] : nclerks: %v, nservers: %v, unreliable: %v, dnsDuration: %v, crash: %v\n", _nclerks, _nservers, _unreliable, _dnsDuration, _crash)
+	fmt.Printf("[INFO] : nclerks: %v, nservers: %v, unreliable: %v, dnsDuration: %v, crash: %v\n, numCpus: %v\n", 
+			_nclerks, _nservers, _unreliable, _dnsDuration, _crash, _numCpus)
 
 	// Metadata & make config
 	title := "Start"
@@ -288,8 +291,9 @@ func main() {
 	maxraftstate := 1000
 	dnsDuration := _dnsDuration
 	nservers := _nservers
+	num_cpus := _numCpus
 	crash:=_crash
-	cfg := my_make_config(nservers, unreliable, maxraftstate)
+	cfg := my_make_config(nservers, unreliable, maxraftstate, num_cpus)
 	defer cfg.Cleanup()
 
 	cfg.Begin(title)
