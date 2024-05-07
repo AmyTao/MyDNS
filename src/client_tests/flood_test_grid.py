@@ -7,9 +7,9 @@ import itertools
 import subprocess
 import pandas as pd
 
-unreliables = [True]
-nclerks = list(range(3, 10, 2)) + list(range(11, 100, 10))
-nservers = list(range(3, 10, 2)) + list(range(11, 100, 10))
+unreliables = [True, False]
+nclerks = list(range(3, 20, 2)) + list(range(21, 60, 10))
+nservers = list(range(3, 20, 2)) + list(range(21, 60, 10))
 
 # fixed value please
 dnsduration = 10
