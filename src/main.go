@@ -277,7 +277,7 @@ func main() {
 	flag.BoolVar(&_unreliable, "unreliable", false, "Whether the network is unreliable")
 	flag.IntVar(&_dnsDuration, "dnsDuration", 10, "Duration of the dns test")
 	flag.BoolVar(&_crash, "crash", false, "Whether to crash servers")
-	flag.IntVar(&_numCpus, "numCpus", runtime.NumCPU(), "Number of CPUs to use")
+	flag.IntVar(&_numCpus, "numCpus", 4, "Number of CPUs to use")
 
 	flag.Parse()
 
