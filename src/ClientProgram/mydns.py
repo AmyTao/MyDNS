@@ -8,6 +8,9 @@ import json
 import time
 import argparse
 from typing import List
+import netifaces as ni
+
+
 
 
 SERVER_ADDRESS = ['10.23.64.10:9876', '10.23.64.10:9877', '10.23.64.10:9878']
@@ -52,9 +55,17 @@ def _get_self_hostname() -> str:
     return socket.gethostname()
 
 
+def _get_ip_address(interface_name):
+    addrs = ni.ifaddresses(interface_name)
+    return addrs[ni.AF_INET][0]['addr']
+
+# # 替换 'wlan0' 为你的网络接口名称
+# ip_address = _get_ip_address('wlan0')
+# print(ip_address)
+
 def _get_self_ip_address() -> str:
     ''' Get the ip address of the current machine. '''
-    return socket.gethostbyname(_get_self_hostname())
+    return _get_ip_address('wlan0')
 
 
 def send_receive(sock: socket.socket, packet: str, args: argparse.Namespace):
