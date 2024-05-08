@@ -83,7 +83,7 @@ def parse_args() -> argparse.Namespace:
     subparser = parser.add_subparsers(dest='mode', help='Select the action to perform')
 
     parser_update = subparser.add_parser('update', help='Update the current ip address')
-    parser_update.add_argument('--update_interval', type=int, default=60, help='The interval in seconds to update the current ip address')
+    parser_update.add_argument('--update_interval', type=int, default=10, help='The interval in seconds to update the current ip address')
     parser_update.add_argument('--self-ip', type=str, default=_get_self_ip_address(), help='The ip address of the current machine')
     parser_update.add_argument('--self-hostname', type=str, default=_get_self_hostname(), help='The hostname of the current machine')
     parser_update.add_argument('--servers', type=str, nargs='+', default=SERVER_ADDRESS, help='The DNS servers to put for the ip address')
