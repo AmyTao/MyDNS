@@ -69,7 +69,7 @@ def send_receive(sock: socket.socket, packet: str, args: argparse.Namespace):
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="MyDNS Client Program")
     # select the action to perform: query or update
-    subparser = parser.add_subparsers(dest='mode', required=True, help='Select the action to perform')
+    subparser = parser.add_subparsers(dest='mode', help='Select the action to perform')
 
     parser_update = subparser.add_parser('update', help='Update the current ip address')
     parser_update.add_argument('--update_interval', type=int, default=60, help='The interval in seconds to update the current ip address')
