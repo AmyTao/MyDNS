@@ -14,7 +14,7 @@ bash ./delete_logs.sh
 go run main.go \
     --nservers 5 \
     --nclerks 5 \
-    --dnsDuration 10 \
+    --dnsDuration 1000 \
     --numCpus 4 \
     # --crash \
     # --unreliable \
