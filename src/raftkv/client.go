@@ -14,11 +14,11 @@ import (
 type Clerk struct {
 	servers []*labrpc.ClientEnd
 	// You will have to modify this struct.
-	leader 	int //记录最新的leader，方便下次通信
-	me 	int64 //每个clerk独一无二的编号，调用nrand生成，5台机器中有两台机器相同的概率几乎可以忽略不计
-	cmdIndex 	int //clerk给每个RPC调用编号
+	leader 	int // record the leader server index
+	me 	int64 // clerk id
+	cmdIndex 	int // clerk's command index
 
-	Listen *net.UDPConn // UDP连接 handle
+	Listen *net.UDPConn // UDP handle
 	Context context.Context // Context for the clerk
 }
 
@@ -33,7 +33,7 @@ func MakeClerk(servers []*labrpc.ClientEnd) *Clerk {
 	ck := new(Clerk)
 	ck.servers = servers
 	// You'll have to add code here.
-	ck.leader = 0 //默认一开始找第一个通信
+	ck.leader = 0 // init leader
 	ck.me = nrand()
 	ck.cmdIndex = 0
 	raft.InfoKV.Printf("Client:%20v  | Create new clerk!\n", ck.me)
@@ -65,18 +65,15 @@ func (ck *Clerk) Get(key string) string {
 		ok := ck.servers[leader].Call("KVServer.Get", &args, &reply)
 		if ok && !reply.WrongLeader{
 			ck.leader = leader
-			//收到回复信息
 			if reply.Value == ErrNoKey{
-				//kv DB暂时没有这个key
-				//raft.InfoKV.Printf("Client:20v cmdIndex:%4d | Get Failed! No such key\n", ck.me, ck.cmdIndex)
+				//kv DB no such key
 				return ""
 			}
 			raft.InfoKV.Printf("Client:%20v cmdIndex:%4d| Successful! Get:[%v] from server:%3d value:[%v]\n", ck.me, ck.cmdIndex, key, leader, reply.Value)
 			return reply.Value
 		}
-		//对面不是leader Or 没收到回复
+		// not leader, go to next server
 		leader = (leader + 1) % len(ck.servers)
-		//raft.InfoKV.Printf("Client:%20v cmdIndex:%4d| Failed! Change server to %3d\n", ck.me, ck.cmdIndex, leader)
 	}
 
 }
@@ -105,9 +102,7 @@ func (ck *Clerk) PutAppend(key string, value string, op string) {
 			ck.leader = leader
 			return
 		}
-		//对面不是leader  Or 没收到回复
 		leader = (leader + 1) % len(ck.servers)
-		//raft.InfoKV.Printf("Client:%20v cmdIndex:%4d| Failed! Change server to %3d\n", ck.me, ck.cmdIndex, leader)
 	}
 
 }

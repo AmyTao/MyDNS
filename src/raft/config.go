@@ -456,7 +456,7 @@ func (cfg *config) one(cmd int, expectedServers int, retry bool) int {
 				}
 			}
 		}
-		//index代表节点最后commit的日志下标
+		//index is the index of the command in the log
 		if index != -1 {
 			// somebody claimed to be the leader and to have
 			// submitted our command; wait a while for agreement.

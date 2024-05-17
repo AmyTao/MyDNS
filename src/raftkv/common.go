@@ -15,8 +15,8 @@ type PutAppendArgs struct {
 	// You'll have to add definitions here.
 	// Field names must start with capital letters,
 	// otherwise RPC will break.
-	ClerkID 	int64 //发送消息的clerk编号
-	CmdIndex 	int  //这个clerk发送的第几条信息
+	ClerkID  int64 // clerk id
+	CmdIndex int   // clerk's command index
 }
 
 type PutAppendReply struct {
@@ -27,12 +27,12 @@ type PutAppendReply struct {
 type GetArgs struct {
 	Key string
 	// You'll have to add definitions here.
-	ClerkID	int64
-	CmdIndex 	int
+	ClerkID  int64
+	CmdIndex int
 }
 
 type GetReply struct {
-	WrongLeader bool   //true -> 对面不是leader
+	WrongLeader bool // true means the reply is not from the leader
 	Err         Err
 	Value       string
 }
