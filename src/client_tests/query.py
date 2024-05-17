@@ -22,15 +22,12 @@ def send_messages(sock):
 
 
 def main():
-    # 创建UDP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('0.0.0.0', 12345))
 
-    # 创建并启动接收消息的线程
     receiver_thread = threading.Thread(target=receive_messages, args=(sock,))
     receiver_thread.start()
 
-    # 创建并启动发送消息的线程
     sender_thread = threading.Thread(target=send_messages, args=(sock,))
     sender_thread.start()
 

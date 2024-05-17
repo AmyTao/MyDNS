@@ -97,14 +97,12 @@ func (e *ClientEnd) Call(svcMeth string, args interface{}, reply interface{}) bo
 	req.args = qb.Bytes()
 
 	select {
-	//以req作为rpc的参数，等待远程调用
-	//因为clientEnd用的是network的管道，所以req相当于是放进了network的管道里
 	case e.ch <- req:
 		// ok
 	case <-e.done:
 		return false
 	}
-	//已经以req作为参数去进行远程函数调用，等待远程服务器的返回
+	// Wait for the reply.
 	rep := <-req.replyCh
 	if rep.ok {
 		rb := bytes.NewBuffer(rep.reply)
@@ -146,7 +144,6 @@ func MakeNetwork() *Network {
 	go func() {
 		for {
 			select {
-			//client的req会来到这里，然后作为参数进入ProcessReq中
 			case xreq := <-rn.endCh:
 				atomic.AddInt32(&rn.count, 1)
 				go rn.ProcessReq(xreq)
@@ -192,13 +189,13 @@ func (rn *Network) ReadEndnameInfo(endname interface{}) (enabled bool,
 	defer rn.mu.Unlock()
 
 	enabled = rn.enabled[endname]
-	//得到与endname通信的server名字
+	// Get the server name associated with the endname
 	servername = rn.connections[endname]
 	if servername != nil {
-		//根据server名字查找对应的IP地址
+		// Get the server associated with the server name
 		server = rn.servers[servername]
 	}
-	//reliable表示信息传递是否会延迟
+	// Reliable is whether the network's reliable
 	reliable = rn.reliable
 	longreordering = rn.longReordering
 	return
@@ -208,7 +205,7 @@ func (rn *Network) IsServerDead(endname interface{}, servername interface{}, ser
 	rn.mu.Lock()
 	defer rn.mu.Unlock()
 
-	if rn.enabled[endname] == false || rn.servers[servername] != server {
+	if !rn.enabled[endname] || rn.servers[servername] != server {
 		return true
 	}
 	return false
@@ -218,13 +215,13 @@ func (rn *Network) ProcessReq(req reqMsg) {
 	enabled, servername, server, reliable, longreordering := rn.ReadEndnameInfo(req.endname)
 
 	if enabled && servername != nil && server != nil {
-		if reliable == false {
+		if !reliable {
 			// short delay
 			ms := (rand.Int() % 27)
 			time.Sleep(time.Duration(ms) * time.Millisecond)
 		}
 
-		if reliable == false && (rand.Int()%1000) < 100 {
+		if !reliable && (rand.Int()%1000) < 100 {
 			// drop the request, return as if timeout
 			req.replyCh <- replyMsg{false, nil}
 			return
@@ -246,7 +243,7 @@ func (rn *Network) ProcessReq(req reqMsg) {
 		var reply replyMsg
 		replyOK := false
 		serverDead := false
-		for replyOK == false && serverDead == false {
+		for !replyOK && !serverDead {
 			select {
 			case reply = <-ech:
 				replyOK = true
@@ -268,13 +265,13 @@ func (rn *Network) ProcessReq(req reqMsg) {
 		// DeleteServer() before superseding the Persister.
 		serverDead = rn.IsServerDead(req.endname, servername, server)
 
-		if replyOK == false || serverDead == true {
+		if !replyOK || serverDead {
 			// server was killed while we were waiting; return error.
 			req.replyCh <- replyMsg{false, nil}
-		} else if reliable == false && (rand.Int()%1000) < 100 {
+		} else if !reliable  && (rand.Int()%1000) < 100 {
 			// drop the reply, return as if timeout
 			req.replyCh <- replyMsg{false, nil}
-		} else if longreordering == true && rand.Intn(900) < 600 {
+		} else if longreordering && rand.Intn(900) < 600 {
 			// delay the response for a while
 			ms := 200 + rand.Intn(1+rand.Intn(2000))
 			// Russ points out that this timer arrangement will decrease
@@ -317,7 +314,6 @@ func (rn *Network) MakeEnd(endname interface{}) *ClientEnd {
 
 	e := &ClientEnd{}
 	e.endname = endname
-	//用的是network的管道
 	e.ch = rn.endCh
 	e.done = rn.done
 	rn.ends[endname] = e

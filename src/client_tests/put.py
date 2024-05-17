@@ -3,18 +3,14 @@ import json
 import time
 
 def send_udp_message(ip, port, message):
-    # 创建socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     
-    # 指定的服务器地址和端口
     server_address = (ip, port)
     
     try:
-        # 发送消息
         sent = sock.sendto(message.encode(), server_address)
         print(f"Sent {sent} bytes to {ip}:{port}")
     finally:
-        # 关闭socket
         sock.close()
 
 if __name__ == "__main__":
