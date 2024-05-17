@@ -40,6 +40,7 @@ func my_run_client(cfg *raftkv.Config, me int, ca chan bool, addr_string string,
 	fmt.Printf("UDP server (clerk %v) listening on %v...\n", me, addr_string)
 	ck.Listen = listen
 	
+	time.Sleep(1 * time.Second) // a temporary solution to avoid synchronization problem
 	clerk_address := "10.23.64.10" + addr_string
 	clerk_hostname := fmt.Sprintf("::Clerk%d", me)
 	ck.Put(clerk_hostname, clerk_address)
@@ -359,7 +360,7 @@ func main() {
 	}
 
 	// Use this to set the time before the program exits
-	time.Sleep(time.Duration(dnsDuration) * time.Second)
+	time.Sleep(time.Duration(dnsDuration + 1) * time.Second)
 
 	// Tell clients to quit
 	cancelFunc()
@@ -368,7 +369,7 @@ func main() {
 	// Wait for all clients to finish, and check if they succeeded
 	for cli := 0; cli < nclients; cli++ {
 		ok := <-ca[cli]
-		if ok == false {
+		if !ok {
 			log.Fatal("failure")
 		}
 	}
