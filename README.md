@@ -118,14 +118,11 @@ Simulate high-load conditions to test RPC communication and packet handling capa
   - RPCs increase with both the number of servers and clients.
   - Total packets remain relatively consistent regardless of the number of servers.
   !["arc pic"](pics/reliable.png)
----
 
 ### 2. **Reliable vs. Unreliable Network**
 - Total packets are always higher in a reliable network compared to an unreliable network.
 - RPCs are consistently higher in an unreliable network compared to a reliable network.
   !["arc pic"](pics/compare.png)
-
----
 
 ### 3. **Correctness Test**
 #### Objective
