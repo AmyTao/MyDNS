@@ -92,12 +92,55 @@ Run the following command to start the correctness check. Note that `--nclients`
 python client_tests/correctness_test.py
 ```
 
+## Experiment Analysis
 
+To evaluate the performance and reliability of the MyDNS system, we conducted the following experiments:
 
+### 1. **Flood Test**
+#### Objective
+Simulate high-load conditions to test RPC communication and packet handling capabilities.
 
-## Analysis
+#### Experimental Setup
+- Send a large number of PUT and QUERY packets to the client within 10 seconds.
+- Parameters:
+  - Network conditions: `unreliable = [True, False]`
+  - Number of servers (`nservers`): `[3, 5, 7, 9, 11, 13, 15, 17, 19]` (small range) and `[11, 21, 31, 41, 51]` (large range)
+  - Number of clients (`nclerks`): Same ranges as the servers.
 
+#### Results Analysis
+- **Unreliable Network**:
+  - Total packets decrease as the number of servers increases but increase with the number of clients.
+  - RPCs increase with both the number of servers and clients.
+  - More servers lead to fewer total packets, indicating better efficiency.
+  !["arc pic"](pics/unreliable.png)
+- **Reliable Network**:
+  - Total packets increase as the number of clients increases.
+  - RPCs increase with both the number of servers and clients.
+  - Total packets remain relatively consistent regardless of the number of servers.
+  !["arc pic"](pics/reliable.png)
+---
 
+### 2. **Reliable vs. Unreliable Network**
+- Total packets are always higher in a reliable network compared to an unreliable network.
+- RPCs are consistently higher in an unreliable network compared to a reliable network.
+  !["arc pic"](pics/compare.png)
 
-!["output"](pics/output.jpg)
+---
+
+### 3. **Correctness Test**
+#### Objective
+Verify system correctness when servers crash.
+
+#### Experimental Setup
+- Send 100 PUT and QUERY packets.
+- Simulate server crashes with `crash = [True, False]`.
+
+#### Results Analysis
+- When `crash = True`, servers randomly shut down (ensuring fewer than half are down at any given time).
+- The system consistently provides correct responses:
+  - **Expected messages**: All messages are successfully received.
+  - **Address validation**: Local address pairs and remote address pairs are identical.
+
+  !["arc pic"](pics/failure.png)
+
 
